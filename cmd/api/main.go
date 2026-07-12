@@ -5,7 +5,10 @@ import (
 
 	"github.com/cryskram/expense-tracker-go/config"
 	"github.com/cryskram/expense-tracker-go/internal/database"
+	"github.com/cryskram/expense-tracker-go/internal/handlers"
+	"github.com/cryskram/expense-tracker-go/internal/repositories"
 	"github.com/cryskram/expense-tracker-go/internal/routes"
+	"github.com/cryskram/expense-tracker-go/internal/services"
 	"github.com/gin-gonic/gin"
 )
 
@@ -21,7 +24,10 @@ func main() {
 	_ = db
 
 	router := gin.Default()
-	routes.Register(router)
+	repo := repositories.NewCategoryRepository(db)
+	service := services.NewCategoryService(repo)
+	handler := handlers.NewCategoryHandler(service)
+	routes.Register(router, handler)
 
 	log.Printf("Starting %s on port %s", cfg.APP_NAME, cfg.PORT)
 

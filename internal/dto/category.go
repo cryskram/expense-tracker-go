@@ -7,7 +7,7 @@ type CreateCategoryRequest struct {
 	Color string `json:"color" binding:"required,max=20"`
 }
 
-type CreateCategoryResponse struct {
+type CategoryResponse struct {
 	ID    string `json:"id"`
 	Name  string `json:"name"`
 	Type  string `json:"type"`
