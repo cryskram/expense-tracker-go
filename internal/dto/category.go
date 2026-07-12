@@ -14,3 +14,10 @@ type CategoryResponse struct {
 	Icon  string `json:"icon"`
 	Color string `json:"color"`
 }
+
+type UpdateCategoryRequest struct {
+	Name  string `json:"name" binding:"required,max=100"`
+	Type  string `json:"type" binding:"required,oneof=income expense"`
+	Icon  string `json:"icon" binding:"required,max=100"`
+	Color string `json:"color" binding:"required,max=20"`
+}

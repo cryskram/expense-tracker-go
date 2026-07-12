@@ -15,8 +15,14 @@ func Register(router *gin.Engine, categoryHandler *handlers.CategoryHandler) {
 
 	api := router.Group("/api")
 	{
-		api.GET("/categories", categoryHandler.GetAll)
-		api.POST("/categories", categoryHandler.Create)
+		categories := api.Group("/categories")
+		{
+			categories.POST("", categoryHandler.Create)
+			categories.GET("", categoryHandler.GetAll)
+			categories.GET("/:id", categoryHandler.GetByID)
+			categories.PUT("/:id", categoryHandler.Update)
+			categories.DELETE("/:id", categoryHandler.Delete)
+		}
 	}
 
 }
