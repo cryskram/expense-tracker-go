@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Register(router *gin.Engine, categoryHandler *handlers.CategoryHandler) {
+func Register(router *gin.Engine, categoryHandler *handlers.CategoryHandler, transactionHandler *handlers.TransactionHandler) {
 	router.GET("/health", func(c *gin.Context) {
 		response.Success(c, http.StatusOK, "server is live", "")
 	})
@@ -22,6 +22,13 @@ func Register(router *gin.Engine, categoryHandler *handlers.CategoryHandler) {
 			categories.GET("/:id", categoryHandler.GetByID)
 			categories.PUT("/:id", categoryHandler.Update)
 			categories.DELETE("/:id", categoryHandler.Delete)
+		}
+
+		transactions := api.Group("/transactions")
+		{
+			transactions.POST("", transactionHandler.Create)
+			transactions.GET("", transactionHandler.GetAll)
+			transactions.GET("/:id", transactionHandler.GetByID)
 		}
 	}
 

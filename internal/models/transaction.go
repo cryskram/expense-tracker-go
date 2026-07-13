@@ -13,7 +13,7 @@ type Transaction struct {
 	Amount          float64   `gorm:"type:numeric(12,2);not null"`
 	CategoryID      uuid.UUID `gorm:"type:uuid;not null"`
 	Category        Category  `gorm:"foreignKey:CategoryID"`
-	TransactionDate string    `gorm:"type:date;not null"`
+	TransactionDate time.Time `gorm:"type:date;not null"`
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 }

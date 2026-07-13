@@ -24,10 +24,16 @@ func main() {
 	_ = db
 
 	router := gin.Default()
-	repo := repositories.NewCategoryRepository(db)
-	service := services.NewCategoryService(repo)
-	handler := handlers.NewCategoryHandler(service)
-	routes.Register(router, handler)
+	categoryRepo := repositories.NewCategoryRepository(db)
+	transactionRepo := repositories.NewTransactionRepository(db)
+
+	categoryService := services.NewCategoryService(categoryRepo)
+	transactionService := services.NewTransactionService(transactionRepo, categoryRepo)
+
+	categoryHandler := handlers.NewCategoryHandler(categoryService)
+	transactionHandler := handlers.NewTransactionHandler(transactionService)
+
+	routes.Register(router, categoryHandler, transactionHandler)
 
 	log.Printf("Starting %s on port %s", cfg.APP_NAME, cfg.PORT)
 
