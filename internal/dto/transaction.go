@@ -16,3 +16,13 @@ type TransactionResponse struct {
 	TransactionDate string           `json:"transaction_date"`
 	Category        CategoryResponse `json:"category"`
 }
+
+type TransactionFilter struct {
+	Page       int    `form:"page"`
+	Limit      int    `form:"limit"`
+	CategoryID string `form:"category"`
+	Sort       string `form:"sort"`
+	Order      string `form:"order"`
+	StartDate  string `form:"start_date"`
+	EndDate    string `form:"end_date"`
+}

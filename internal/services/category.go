@@ -53,13 +53,7 @@ func (s *categoryService) GetAll() ([]dto.CategoryResponse, error) {
 		return nil, err
 	}
 
-	response := make([]dto.CategoryResponse, 0, len(categories))
-
-	for _, category := range categories {
-		response = append(response, utils.ToCategoryResponse(category))
-	}
-
-	return response, nil
+	return utils.ToCategoryResponses(categories), nil
 }
 
 func (s *categoryService) GetByID(id uuid.UUID) (*dto.CategoryResponse, error) {

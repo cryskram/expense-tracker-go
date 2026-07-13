@@ -1,17 +1,19 @@
 package services
 
 import (
+	"math"
 	"time"
 
 	"github.com/cryskram/expense-tracker-go/internal/dto"
 	"github.com/cryskram/expense-tracker-go/internal/models"
 	"github.com/cryskram/expense-tracker-go/internal/repositories"
+	"github.com/cryskram/expense-tracker-go/internal/utils"
 	"github.com/google/uuid"
 )
 
 type TransactionService interface {
 	Create(req dto.CreateTransactionRequest) (*dto.TransactionResponse, error)
-	GetAll() ([]dto.TransactionResponse, error)
+	GetAll(filter dto.TransactionFilter) ([]dto.TransactionResponse, dto.Pagination, error)
 	GetByID(id string) (*dto.TransactionResponse, error)
 }
 
@@ -61,50 +63,51 @@ func (s *transactionService) Create(req dto.CreateTransactionRequest) (*dto.Tran
 		return nil, err
 	}
 
-	response := dto.TransactionResponse{
-		ID:     savedTransaction.ID.String(),
-		Title:  savedTransaction.Title,
-		Notes:  savedTransaction.Notes,
-		Amount: savedTransaction.Amount,
-		Category: dto.CategoryResponse{
-			ID:    savedTransaction.Category.ID.String(),
-			Name:  savedTransaction.Category.Name,
-			Type:  string(savedTransaction.Category.Type),
-			Icon:  savedTransaction.Category.Icon,
-			Color: savedTransaction.Category.Color,
-		},
-		TransactionDate: savedTransaction.TransactionDate.Format("2006-01-02"),
-	}
-
-	return &response, nil
+	resp := utils.ToTransactionResponse(*savedTransaction)
+	return &resp, nil
 }
 
-func (s *transactionService) GetAll() ([]dto.TransactionResponse, error) {
-	transactions, err := s.transactionRepo.GetAll()
+func (s *transactionService) GetAll(filter dto.TransactionFilter) ([]dto.TransactionResponse, dto.Pagination, error) {
+	if filter.Page <= 0 {
+		filter.Page = 1
+	}
+
+	if filter.Limit <= 0 {
+		filter.Limit = 20
+	}
+
+	if filter.Limit > 100 {
+		filter.Limit = 100
+	}
+
+	if filter.Sort == "" {
+		filter.Sort = "date"
+	}
+
+	if filter.Order == "" {
+		filter.Order = "desc"
+	}
+
+	transactions, total, err := s.transactionRepo.GetAll(filter)
+
 	if err != nil {
-		return nil, err
+		return nil, dto.Pagination{}, err
 	}
 
-	response := make([]dto.TransactionResponse, 0, len(transactions))
+	totalPages := int(math.Ceil(
+		float64(total) /
+			float64(filter.Limit),
+	))
 
-	for _, transaction := range transactions {
-		response = append(response, dto.TransactionResponse{
-			ID:     transaction.ID.String(),
-			Title:  transaction.Title,
-			Notes:  transaction.Notes,
-			Amount: transaction.Amount,
-			Category: dto.CategoryResponse{
-				ID:    transaction.Category.ID.String(),
-				Name:  transaction.Category.Name,
-				Type:  string(transaction.Category.Type),
-				Icon:  transaction.Category.Icon,
-				Color: transaction.Category.Color,
-			},
-			TransactionDate: transaction.TransactionDate.Format("2006-01-02"),
-		})
+	pagination := dto.Pagination{
+		Page:        filter.Page,
+		Limit:       filter.Limit,
+		Total:       total,
+		TotalPages:  totalPages,
+		HasNext:     filter.Page < totalPages,
+		HasPrevious: filter.Page > 1,
 	}
-
-	return response, nil
+	return utils.ToTransactionResponses(transactions), pagination, nil
 }
 
 func (s *transactionService) GetByID(id string) (*dto.TransactionResponse, error) {
@@ -118,20 +121,6 @@ func (s *transactionService) GetByID(id string) (*dto.TransactionResponse, error
 		return nil, err
 	}
 
-	response := dto.TransactionResponse{
-		ID:     transaction.ID.String(),
-		Title:  transaction.Title,
-		Notes:  transaction.Notes,
-		Amount: transaction.Amount,
-		Category: dto.CategoryResponse{
-			ID:    transaction.Category.ID.String(),
-			Name:  transaction.Category.Name,
-			Type:  string(transaction.Category.Type),
-			Icon:  transaction.Category.Icon,
-			Color: transaction.Category.Color,
-		},
-		TransactionDate: transaction.TransactionDate.Format("2006-01-02"),
-	}
-
-	return &response, nil
+	resp := utils.ToTransactionResponse(*transaction)
+	return &resp, nil
 }

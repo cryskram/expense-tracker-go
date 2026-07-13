@@ -36,14 +36,28 @@ func (h *TransactionHandler) Create(c *gin.Context) {
 }
 
 func (h *TransactionHandler) GetAll(c *gin.Context) {
-	transactions, err := h.service.GetAll()
+
+	var filter dto.TransactionFilter
+
+	if err := c.ShouldBindQuery(&filter); err != nil {
+		response.Error(c, http.StatusBadRequest, "invalid query parameters")
+		return
+	}
+
+	transactions, pagination, err := h.service.GetAll(filter)
 
 	if err != nil {
 		response.Error(c, http.StatusInternalServerError, "internal server error")
 		return
 	}
 
-	response.Success(c, http.StatusOK, "transactions retrieved", transactions)
+	response.Paginated(
+		c,
+		http.StatusOK,
+		"transactions retrieved",
+		transactions,
+		pagination,
+	)
 }
 
 func (h *TransactionHandler) GetByID(c *gin.Context) {

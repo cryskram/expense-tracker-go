@@ -14,3 +14,13 @@ func ToCategoryResponse(category models.Category) dto.CategoryResponse {
 		Color: category.Color,
 	}
 }
+
+func ToCategoryResponses(categories []models.Category) []dto.CategoryResponse {
+	response := make([]dto.CategoryResponse, 0, len(categories))
+
+	for _, category := range categories {
+		response = append(response, ToCategoryResponse(category))
+	}
+
+	return response
+}
