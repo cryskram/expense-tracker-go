@@ -1,10 +1,16 @@
 package services
 
 import (
+	"errors"
+
 	"github.com/cryskram/expense-tracker-go/internal/dto"
+	apperrors "github.com/cryskram/expense-tracker-go/internal/errors"
 	"github.com/cryskram/expense-tracker-go/internal/models"
 	"github.com/cryskram/expense-tracker-go/internal/repositories"
+	"github.com/cryskram/expense-tracker-go/internal/utils"
 	"github.com/google/uuid"
+
+	"gorm.io/gorm"
 )
 
 type CategoryService interface {
@@ -37,13 +43,8 @@ func (s *categoryService) Create(req dto.CreateCategoryRequest) (*dto.CategoryRe
 		return nil, err
 	}
 
-	return &dto.CategoryResponse{
-		ID:    category.ID.String(),
-		Name:  category.Name,
-		Type:  string(category.Type),
-		Icon:  category.Icon,
-		Color: category.Color,
-	}, nil
+	resp := utils.ToCategoryResponse(category)
+	return &resp, nil
 }
 
 func (s *categoryService) GetAll() ([]dto.CategoryResponse, error) {
@@ -55,13 +56,7 @@ func (s *categoryService) GetAll() ([]dto.CategoryResponse, error) {
 	response := make([]dto.CategoryResponse, 0, len(categories))
 
 	for _, category := range categories {
-		response = append(response, dto.CategoryResponse{
-			ID:    category.ID.String(),
-			Name:  category.Name,
-			Type:  string(category.Type),
-			Icon:  category.Icon,
-			Color: category.Color,
-		})
+		response = append(response, utils.ToCategoryResponse(category))
 	}
 
 	return response, nil
@@ -71,16 +66,15 @@ func (s *categoryService) GetByID(id uuid.UUID) (*dto.CategoryResponse, error) {
 	category, err := s.repo.GetByID(id)
 
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, apperrors.ErrCategoryNotFound
+		}
+
 		return nil, err
 	}
 
-	return &dto.CategoryResponse{
-		ID:    category.ID.String(),
-		Name:  category.Name,
-		Type:  string(category.Type),
-		Icon:  category.Icon,
-		Color: category.Color,
-	}, nil
+	resp := utils.ToCategoryResponse(*category)
+	return &resp, nil
 }
 
 func (s *categoryService) Update(id uuid.UUID, req dto.UpdateCategoryRequest) (*dto.CategoryResponse, error) {
@@ -99,13 +93,8 @@ func (s *categoryService) Update(id uuid.UUID, req dto.UpdateCategoryRequest) (*
 		return nil, err
 	}
 
-	return &dto.CategoryResponse{
-		ID:    category.ID.String(),
-		Name:  category.Name,
-		Type:  string(category.Type),
-		Icon:  category.Icon,
-		Color: category.Color,
-	}, nil
+	resp := utils.ToCategoryResponse(*category)
+	return &resp, nil
 }
 
 func (s *categoryService) Delete(id uuid.UUID) error {

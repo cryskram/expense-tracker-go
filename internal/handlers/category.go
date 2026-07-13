@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/cryskram/expense-tracker-go/internal/dto"
+	apperrors "github.com/cryskram/expense-tracker-go/internal/errors"
 	"github.com/cryskram/expense-tracker-go/internal/response"
 	"github.com/cryskram/expense-tracker-go/internal/services"
 	"github.com/gin-gonic/gin"
@@ -61,7 +62,13 @@ func (h *CategoryHandler) GetByID(c *gin.Context) {
 	category, err := h.service.GetByID(id)
 
 	if err != nil {
-		response.Error(c, http.StatusNotFound, "category not found")
+		switch err {
+		case apperrors.ErrCategoryNotFound:
+			response.Error(c, http.StatusNotFound, "category not found")
+		default:
+			response.Error(c, http.StatusInternalServerError, "internal server error")
+		}
+
 		return
 	}
 
@@ -101,9 +108,7 @@ func (h *CategoryHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	err = h.service.Delete(id)
-
-	if err != nil {
+	if err := h.service.Delete(id); err != nil {
 		response.Error(c, http.StatusNotFound, "category not found")
 		return
 	}

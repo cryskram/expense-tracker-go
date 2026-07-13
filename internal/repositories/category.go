@@ -51,6 +51,10 @@ func (r *categoryRepository) Update(category *models.Category) error {
 func (r *categoryRepository) Delete(id uuid.UUID) error {
 	result := r.db.Delete(&models.Category{}, "id = ?", id)
 
+	if result.Error != nil {
+		return result.Error
+	}
+
 	if result.RowsAffected == 0 {
 		return gorm.ErrRecordNotFound
 	}
